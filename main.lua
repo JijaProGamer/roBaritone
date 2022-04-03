@@ -34,9 +34,9 @@ function module:connect()
 			["command"] = "load";
 			["isMaster"] = self.isMaster
 		}))
-	
+
 	self.ping(WebSocket)
-	
+
 	coroutine.wrap(function()
 		while task.wait(0.5) do
 			self.ping(WebSocket)
@@ -90,7 +90,7 @@ function module:connect()
 			["script"] = Code
 		}))
 	end
-	
+
 	self.specificExecute = function(Clients,Code,Params)
 		for index,value in ipairs(Params) do
 			value = tostring(value)
@@ -104,7 +104,7 @@ function module:connect()
 			["Clients"] = Clients;
 		}))
 	end
-	
+
 	self.globalTeleport = function(placeId,jobId)
 		WebSocket:Send(HttpService:JSONEncode({
 			["id"] = connectData.id;
@@ -124,7 +124,7 @@ function module:connect()
 			["placeId"] = placeId;
 			["place"] = jobId;
 		}))
-		
+
 		self.dumpData = function(scope,dataToDump)
 			WebSocket:Send(HttpService:JSONEncode({
 				["id"] = connectData.id;
@@ -134,7 +134,7 @@ function module:connect()
 				["dataToDump"] = dataToDump;
 			}))
 		end
-		
+
 		self.dumpData = function(scope,dataToDump)
 			WebSocket:Send(HttpService:JSONEncode({
 				["id"] = connectData.id;
@@ -144,7 +144,7 @@ function module:connect()
 				["dataToDump"] = dataToDump;
 			}))
 		end
-		
+
 		self.getDumpedData = function(scope)
 			WebSocket:Send(HttpService:JSONEncode({
 				["id"] = connectData.id;
@@ -153,7 +153,7 @@ function module:connect()
 				["scope"] = scope;
 			}))
 		end
-		
+
 		self.clearDumpedData = function(scope)
 			WebSocket:Send(HttpService:JSONEncode({
 				["id"] = connectData.id;
@@ -168,13 +168,13 @@ end
 module.new = function(ip,isMaster)
 	local mainModule = {}
 	setmetatable(mainModule,module)
-	
+
 	mainModule.ip = ip
 	mainModule.isMaster = isMaster
-	
+
 	mainModule:connect()
-	
+
 	return mainModule
 end
 
-return module.new()
+return module
