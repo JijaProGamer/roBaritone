@@ -22,7 +22,6 @@ end
 function module:connect()
 	local WebSocket = websocketLibrary.connect("ws://"..self.ip)
 
-	self.rawOnMessage = WebSocket.OnMessage
 	self.WebSocket = WebSocket
 	WebSocket.OnClose:Connect(function() LocalPlayer:Kick("Websocket isnt supposed to close") end)
 
