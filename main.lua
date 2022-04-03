@@ -35,11 +35,11 @@ function module:connect()
 			["isMaster"] = self.isMaster
 		}))
 
-	self.ping(WebSocket)
+	self:ping(WebSocket)
 
 	coroutine.wrap(function()
 		while task.wait(0.5) do
-			self.ping(WebSocket)
+			self:ping(WebSocket)
 		end
 	end)()
 
