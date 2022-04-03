@@ -64,9 +64,12 @@ local function Run()
 		else
 			task.wait(10)
 			Pathfind(Bush)
-			Run()
+			break
 		end
 	end
+
+	task.wait()
+	Run()
 end
 
 Run()
