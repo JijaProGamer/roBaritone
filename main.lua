@@ -11,13 +11,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 function module:ping()
-	print(HttpService:JSONEncode(
-		{
-			["id"] = self.id;
-			["password"] = self.password;
-			["command"] = "ping";
-		}))
-	
 	self.WebSocket:Send(HttpService:JSONEncode(
 		{
 			["id"] = self.id;
