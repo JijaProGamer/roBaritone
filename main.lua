@@ -23,7 +23,6 @@ function module:connect()
 	local WebSocket = websocketLibrary.connect("ws://"..self.ip)
 
 	self.WebSocket = WebSocket
-	WebSocket.OnClose:Connect(function() LocalPlayer:Kick("Websocket isnt supposed to close") end)
 
 	local connectData = HttpService:JSONDecode(WebSocket.OnMessage:Wait())
 
