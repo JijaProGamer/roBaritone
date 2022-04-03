@@ -11,6 +11,13 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 function module:ping()
+	print(HttpService:JSONEncode(
+		{
+			["id"] = self.id;
+			["password"] = self.password;
+			["command"] = "ping";
+		}))
+	
 	self.WebSocket:Send(HttpService:JSONEncode(
 		{
 			["id"] = self.id;
@@ -34,6 +41,9 @@ function module:connect()
 			["isMaster"] = self.isMaster
 		}))
 
+	self.password = connectData.password
+	self.id = connectData.id
+	
 	self:ping()
 
 	coroutine.wrap(function()
@@ -41,10 +51,7 @@ function module:connect()
 			self:ping()
 		end
 	end)()
-
-	self.password = connectData.password
-	self.id = connectData.id
-
+	
 	local TeleportFunction = Instance.new("BindableFunction")
 	local ExecuteFunction = Instance.new("BindableFunction")
 	local ClientJoined = Instance.new("BindableEvent")
@@ -57,6 +64,7 @@ function module:connect()
 	ExecuteFunction.OnInvoke = function() return true end
 
 	WebSocket.OnMessage:Connect(function(msg)
+		print(msg)
 		local Data = HttpService:JSONDecode(msg)
 		local Type,event = Data["type"],Data.event
 
