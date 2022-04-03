@@ -1,25 +1,28 @@
 local websocketLibrary = (syn and syn.websocket) or (Krnl and Krnl.WebSocket) or WebSocket
-if(not websocketLibrary) then return error("Exploit doesn't support websockets") end
+if not websocketLibrary then return error("Exploit doesn't support websockets") end
 
 local module = {}
 
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
+local Players = game:GetService("Players")
 
-module.ping = function(WebSocket,data)
+local LocalPlayer = Players.LocalPlayer
+
+function module:ping(WebSocket)
 	WebSocket:Send(HttpService:JSONEncode(
 		{
-			["id"] = data.id;
-			["password"] = data.password;
+			["id"] = self.id;
+			["password"] = self.password;
 			["command"] = "ping";
 		}))
 end
 
-module.connect = function(ip,isMaster)
-	local WebSocket = websocketLibrary.connect("ws://"..ip)
+function module:connect()
+	local WebSocket = websocketLibrary.connect("ws://"..self.ip)
 
-	module.rawOnMessage = WebSocket.OnMessage
-	WebSocket.OnClose:Connect(function() error("Websocket isnt supposed to close") end)
+	self.rawOnMessage = WebSocket.OnMessage
+	WebSocket.OnClose:Connect(function() LocalPlayer:Kick("Websocket isnt supposed to close") end)
 
 	local connectData = HttpService:JSONDecode(WebSocket.OnMessage:Wait())
 
@@ -28,28 +31,27 @@ module.connect = function(ip,isMaster)
 			["id"] = connectData.id;
 			["password"] = connectData.password;
 			["command"] = "load";
-			["isMaster"] = isMaster
+			["isMaster"] = self.isMaster
 		}))
 	
-	module.ping(WebSocket,connectData)
+	self.ping(WebSocket)
 	
 	coroutine.wrap(function()
 		while task.wait(0.5) do
-			module.ping(WebSocket,connectData)
+			self.ping(WebSocket)
 		end
 	end)()
 
-	module.password = connectData.password
-	module.id = connectData.id
-	module.isMaster = connectData.isMaster
+	self.password = connectData.password
+	self.id = connectData.id
 
 	local TeleportFunction = Instance.new("BindableFunction")
 	local ExecuteFunction = Instance.new("BindableFunction")
 	local ClientJoined = Instance.new("BindableEvent")
 
-	module.canTeleport = TeleportFunction
-	module.canExecute = ExecuteFunction
-	module.clientJoined = ClientJoined.Event
+	self.canTeleport = TeleportFunction
+	self.canExecute = ExecuteFunction
+	self.clientJoined = ClientJoined.Event
 
 	TeleportFunction.OnInvoke = function() return true end
 	ExecuteFunction.OnInvoke = function() return true end
@@ -60,7 +62,11 @@ module.connect = function(ip,isMaster)
 
 		if event == "teleport" then
 			if TeleportFunction:Invoke(Type,Data.id,Data.placeId,Data.place,Data.clients) then
-				TeleportService:TeleportToPlaceInstance(Data.placeId,Data.place)
+				if Data.place then
+					TeleportService:TeleportToPlaceInstance(Data.placeId,Data.place)
+				else
+					TeleportService:Teleport(Data.placeId)
+				end
 			end
 		elseif event == "clientJoined" then
 			ClientJoined:Fire(Data.id,Data.isMaster)
@@ -71,7 +77,7 @@ module.connect = function(ip,isMaster)
 		end
 	end)
 
-	module.globalExecute = function(Code,Params)
+	self.globalExecute = function(Code,Params)
 		for index,value in ipairs(Params) do
 			value = tostring(value)
 			Code = Code:gsub("EXTERNAL_PARAMETER_"..index, value)
@@ -84,7 +90,7 @@ module.connect = function(ip,isMaster)
 		}))
 	end
 	
-	module.specificExecute = function(Clients,Code,Params)
+	self.specificExecute = function(Clients,Code,Params)
 		for index,value in ipairs(Params) do
 			value = tostring(value)
 			Code = Code:gsub("EXTERNAL_PARAMETER_"..index, value)
@@ -98,7 +104,7 @@ module.connect = function(ip,isMaster)
 		}))
 	end
 	
-	module.globalTeleport = function(placeId,jobId)
+	self.globalTeleport = function(placeId,jobId)
 		WebSocket:Send(HttpService:JSONEncode({
 			["id"] = connectData.id;
 			["password"] = connectData.password;
@@ -108,7 +114,7 @@ module.connect = function(ip,isMaster)
 		}))
 	end
 
-	module.specificTeleport = function(Clients,placeId,jobId)
+	self.specificTeleport = function(Clients,placeId,jobId)
 		WebSocket:Send(HttpService:JSONEncode({
 			["id"] = connectData.id;
 			["password"] = connectData.password;
@@ -117,7 +123,57 @@ module.connect = function(ip,isMaster)
 			["placeId"] = placeId;
 			["place"] = jobId;
 		}))
+		
+		self.dumpData = function(scope,dataToDump)
+			WebSocket:Send(HttpService:JSONEncode({
+				["id"] = connectData.id;
+				["password"] = connectData.password;
+				["command"] = "dumpData";
+				["scope"] = scope;
+				["dataToDump"] = dataToDump;
+			}))
+		end
+		
+		self.dumpData = function(scope,dataToDump)
+			WebSocket:Send(HttpService:JSONEncode({
+				["id"] = connectData.id;
+				["password"] = connectData.password;
+				["command"] = "dumpData";
+				["scope"] = scope;
+				["dataToDump"] = dataToDump;
+			}))
+		end
+		
+		self.getDumpedData = function(scope)
+			WebSocket:Send(HttpService:JSONEncode({
+				["id"] = connectData.id;
+				["password"] = connectData.password;
+				["command"] = "getDumpedData";
+				["scope"] = scope;
+			}))
+		end
+		
+		self.clearDumpedData = function(scope)
+			WebSocket:Send(HttpService:JSONEncode({
+				["id"] = connectData.id;
+				["password"] = connectData.password;
+				["command"] = "clearDumpedData";
+				["scope"] = scope;
+			}))
+		end
 	end
 end
 
-return module
+module.new = function(ip,isMaster)
+	local mainModule = {}
+	setmetatable(mainModule,module)
+	
+	mainModule.ip = ip
+	mainModule.isMaster = isMaster
+	
+	mainModule:connect()
+	
+	return mainModule
+end
+
+return module.new()
