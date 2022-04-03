@@ -11,7 +11,7 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 function module:ping(WebSocket)
-	for i,v in pairs(self) do print(i,v) end
+	warn(WebSocket)
 	WebSocket:Send(HttpService:JSONEncode(
 		{
 			["id"] = self.id;
