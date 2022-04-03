@@ -64,7 +64,6 @@ function module:connect()
 	ExecuteFunction.OnInvoke = function() return true end
 
 	WebSocket.OnMessage:Connect(function(msg)
-		print(msg)
 		local Data = HttpService:JSONDecode(msg)
 		local Type,event = Data["type"],Data.event
 
