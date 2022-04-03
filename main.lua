@@ -2,6 +2,7 @@ local websocketLibrary = (syn and syn.websocket) or (Krnl and Krnl.WebSocket) or
 if not websocketLibrary then return error("Exploit doesn't support websockets") end
 
 local module = {}
+module.__index = module
 
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
