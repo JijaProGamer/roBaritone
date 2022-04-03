@@ -10,9 +10,8 @@ local Players = game:GetService("Players")
 
 local LocalPlayer = Players.LocalPlayer
 
-function module:ping(WebSocket)
-	warn(WebSocket)
-	WebSocket:Send(HttpService:JSONEncode(
+function module:ping()
+	self.WebSocket:Send(HttpService:JSONEncode(
 		{
 			["id"] = self.id;
 			["password"] = self.password;
@@ -24,6 +23,7 @@ function module:connect()
 	local WebSocket = websocketLibrary.connect("ws://"..self.ip)
 
 	self.rawOnMessage = WebSocket.OnMessage
+	self.WebSocket = WebSocket
 	WebSocket.OnClose:Connect(function() LocalPlayer:Kick("Websocket isnt supposed to close") end)
 
 	local connectData = HttpService:JSONDecode(WebSocket.OnMessage:Wait())
@@ -36,11 +36,11 @@ function module:connect()
 			["isMaster"] = self.isMaster
 		}))
 
-	self:ping(WebSocket)
+	self:ping()
 
 	coroutine.wrap(function()
 		while task.wait(0.5) do
-			self:ping(WebSocket)
+			self:ping()
 		end
 	end)()
 
