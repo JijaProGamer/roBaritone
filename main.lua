@@ -6,6 +6,15 @@ local module = {}
 local HttpService = game:GetService("HttpService")
 local TeleportService = game:GetService("TeleportService")
 
+module.ping = function(WebSocket,data)
+	WebSocket:Send(HttpService:JSONEncode(
+		{
+			["id"] = data.id;
+			["password"] = data.password;
+			["command"] = "ping";
+		}))
+end
+
 module.connect = function(ip,isMaster)
 	local WebSocket = websocketLibrary.connect("ws://"..ip)
 
@@ -21,6 +30,14 @@ module.connect = function(ip,isMaster)
 			["command"] = "load";
 			["isMaster"] = isMaster
 		}))
+	
+	module.ping(WebSocket,connectData)
+	
+	coroutine.wrap(function()
+		while task.wait(0.5) do
+			module.ping(WebSocket,connectData)
+		end
+	end)()
 
 	module.password = connectData.password
 	module.id = connectData.id
